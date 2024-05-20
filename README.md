@@ -6,6 +6,8 @@ Steps to accomplish your search:
 
 1. Use the FindGSE function to find the GSE ids of the datasets based on your search term.
 2. Use the GEOscrap function to get a data frame containing metadata of different datasets.
+
+
 Notes:
 
 1. Be careful about setting the arguments in terms of any possible typos.
