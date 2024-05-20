@@ -1,13 +1,4 @@
 
-#' Find GSE
-#'
-#' This function searches for GSE IDs based on a search term, organism, and study type.
-#' @param Search_Term The search term to use.
-#' @param Organism The organism to filter by.
-#' @param Study_type The type of study to filter by.
-#' @param max_result The maximum number of results to return.
-#' @return A list of GSE IDs.
-#' @export
 
 
 ###### FindGSE
@@ -177,8 +168,6 @@ FindGSE <- function(Search_Term = Search_Term, Organism = organism, Study_type =
 
 }
 
-setwd('D:/Research/Fetching GEO Data/GEOscraper')
-library(devtools)
-document()
+
 
 
