@@ -12,7 +12,7 @@ Notes:
 
 1. Be careful about setting the arguments in terms of any possible typos.
 2. Your search term should be in a vector, such as: c('(colorectal cancer)', 'AND', '(scRNAseq)'); pay attention to the parentheses.
-3. There are multiple pauses throughout the functions in order to prevent too many requests (HTTP error 429) but NCBI has declared that without an API, you can send 3 requests per second. However, I preferred to seal the deal way more conservative!
+3. There are multiple pauses throughout the functions in order to prevent too many requests (HTTP error 429). Albeit NCBI has declared that without an API, you can send 3 requests per second. However, I preferred to seal the deal way more conservative!
 4. This function has not been rigorously tested, just two or three times to get a ballpark. In terms of any further problems, bugs, etc., I would be happy if you let me know.
 
 Any suggestions or wrapping it up into a package would make me deliriously happy.
