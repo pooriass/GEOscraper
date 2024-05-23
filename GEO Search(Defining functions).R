@@ -77,7 +77,7 @@ FindGSE <- function(Search_Term = Search_Term, Organism = organism, Study_type =
   
   
   ################## Temp Pause ######################
-  pause_time <- sample(3:5)[1]
+  pause_time <- sample(1:2)[1]
   
   message(paste("Pausing for", pause_time,  "seconds...") )
   Sys.sleep(pause_time)
@@ -129,7 +129,7 @@ FindGSE <- function(Search_Term = Search_Term, Organism = organism, Study_type =
   
    
    ################## Temp Pause ######################
-   pause_time <- sample(3:5)[1]
+   pause_time <- sample(1:2)[1]
    
    message(paste("Pausing for", pause_time,  "seconds...") )
    Sys.sleep(pause_time)
@@ -158,16 +158,38 @@ FindGSE <- function(Search_Term = Search_Term, Organism = organism, Study_type =
   
   
   ################## Temp Pause ######################
-  pause_time <- sample(3:5)[1]
+  pause_time <- sample(1:2)[1]
   
   message(paste("Pausing for", pause_time,  "seconds...") )
   Sys.sleep(pause_time)
   message("Resuming execution...")
   
   
-  ###### IDs to GSE 
+  ##################### IDs to GSE ######################
   
- url2 <-  paste0('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds&id=', paste0(matches, collapse = ',') )
+  ### making a hundred list 
+  
+  if(length(matches) > 100 ){
+  
+  number_of_id <- floor(length(matches)/100)
+  
+  gener_number <- list()
+  for ( i in 1:number_of_id){
+  gener_number[i] <- 100*(i - 1 ) + 1
+}
+  
+  gener_number <- unlist(gener_number)
+  
+  
+
+  #### Untill divided numbers 
+  GSE_list <- list()
+  for ( i in 1:length(gener_number)) {
+    number_number <- gener_number[i]
+    match_numb <- number_number:(number_number+99)
+    
+
+ url2 <-  paste0('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds&id=', paste0(matches[match_numb], collapse = ',') )
  content <- fetch_with_backoff(url = url2)
  parsed_page <- read_html(content)
  
@@ -176,15 +198,76 @@ FindGSE <- function(Search_Term = Search_Term, Organism = organism, Study_type =
 
  long_string <- as.character(parsed_page)
  
- matches <- str_extract_all(long_string, 'type="String">GSE[0-9]+</item><item')
+ matches2 <- str_extract_all(long_string, 'type="String">GSE[0-9]+</item><item')
  
  
- matches <- unlist( gsub('type=\"String\">', '',matches[[1]] ) )
- GSE_list<- gsub('</item><item', '',matches )
+ matches2 <- unlist( gsub('type=\"String\">', '',matches2[[1]] ) )
+ GSE_list[[i]]<- gsub('</item><item', '',matches2 )
  
  
- return(GSE_list)
  
+ pause_time <- sample(1:2)[1]
+ 
+ message(paste("Pausing for", pause_time,  "seconds...") )
+ Sys.sleep(pause_time)
+ message("Resuming execution...")
+ 
+ 
+  }
+  
+  ###### remaining numbers ####### 
+  
+  if( length(matches)%%100 != 0){
+  base_remain <- (number_of_id*100) 
+  remain <- (base_remain +1 ):(base_remain + length(matches)%%100 )
+  
+  }else{ remain <- (number_of_id*100) }
+  
+  
+  url3 <-  paste0('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds&id=', paste0(matches[remain], collapse = ',') )
+  content <- fetch_with_backoff(url = url3)
+  parsed_page <- read_html(content)
+  
+  
+  # Extract the GSE number using a regular expression
+  
+  long_string <- as.character(parsed_page)
+  
+  matches4 <- str_extract_all(long_string, 'type="String">GSE[0-9]+</item><item')
+  
+  
+  matches4 <- unlist( gsub('type=\"String\">', '',matches4[[1]] ) )
+  GSE_list2<- gsub('</item><item', '',matches4 )
+  
+  return( unique(c(unlist(GSE_list), GSE_list2)) )
+  
+  
+  ###### If the legnth of result is less than 100 
+  }else{
+    
+    
+    url2 <-  paste0('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds&id=', paste0(matches, collapse = ',') )
+    content <- fetch_with_backoff(url = url2)
+    parsed_page <- read_html(content)
+    
+    
+    # Extract the GSE number using a regular expression
+    
+    long_string <- as.character(parsed_page)
+    
+    matches <- str_extract_all(long_string, 'type="String">GSE[0-9]+</item><item')
+    
+    
+    matches <- unlist( gsub('type=\"String\">', '',matches[[1]] ) )
+    GSE_list<- gsub('</item><item', '',matches )
+    
+    
+    return(GSE_list)
+
+  }
+  
+  
+
 }
 
 ######################################### GEOscrap #############################
@@ -338,7 +421,7 @@ GEOscrap <- function (GSE = GSE, attr = attr ){
     
     
     ################## Temp Pause ######################
-    pause_time <- sample(3:5)[1]
+    pause_time <- sample(1:2)[1]
     
     message(paste("Pausing for", pause_time,  "seconds...") )
     Sys.sleep(pause_time)
@@ -364,7 +447,7 @@ GEOscrap <- function (GSE = GSE, attr = attr ){
     result_df[i,which(colnames(result_df) == 'chracteristics')] <- ifelse(length(chracteristics == 1),  chracteristics , 'NA or more than 1 obj') 
     
     ################## Temp Pause ######################
-    pause_time <- sample(3:5)[2]
+    pause_time <- sample(1:2)[2]
     
     message(paste("Pausing for", pause_time,  "seconds...") )
     Sys.sleep(pause_time)
