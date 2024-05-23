@@ -1,6 +1,6 @@
 ########### GEOscraper #############
 
-Searching Gene Expression Omnibus is one of the main challenges at the beginning of a bioinformatic project. Since I couldn't find any specific packages or functions, or any feasible facility to download and fetch the GEO metadata of different datasets, I have wrapped up some self-made functions to download and stash the metadata of GEO datasets.
+Searching Gene Expression Omnibus is one of the main challenges at the beginning of a bioinformatic project. Since I couldn't find any specific packages or functions, or any feasible facilities to download and fetch the GEO metadata of different datasets, I have wrapped up some self-made functions to download and stash the metadata of GEO datasets.
 
 Steps to accomplish your search:
 
