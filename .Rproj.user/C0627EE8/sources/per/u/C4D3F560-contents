@@ -1,0 +1,67 @@
+
+library(rvest)
+library(httr)
+library(xml2)
+library(retry)
+library(tidyverse)
+library(stringr)
+library(GEOscraper)
+
+
+
+
+
+term <- c('(hepatocellular carcinoma)')
+
+
+
+ids <- FindGSE(Search_Term = term, Organism = 'Homo sapiens', Study_type = 'Non-coding RNA profiling by high throughput sequencing', max_result = 2000)
+
+<- GEOscrap(ids)
+
+
+perioud <- seq(1, length(ids), 20)
+results_list <- list()
+
+for ( i in 4:length(perioud)){
+  
+  id <- perioud[i]:(perioud[i]+19)
+  results <- GEOscrap(GSE = ids[id], attr = 'mir' )
+  results_list[[i]] <- results
+}
+
+
+
+
+
+final_result  <- rbind(data.frame(), results_list[[1]])
+for (i in 1:length(results_list)){
+  
+  final_result  <- rbind(final_result, results_list[[i]])
+  
+}
+
+
+id <- perioud[3]:(perioud[3]+19)
+ids[id]
+
+
+
+
+
+final_result  <- rbind(data.frame(), results_list[[1]])
+for (i in 1:length(results_list)){
+  
+  final_result  <- rbind(final_result, results_list[[i]])
+  
+}
+
+
+length(unique(final_result$GSE_ID))
+
+final_result <- final_result[!duplicated(final_result$GSE_ID ),] 
+
+
+
+write.csv(final_result,'D:/Research/hcc/MIR/result_without_20.csv')
+

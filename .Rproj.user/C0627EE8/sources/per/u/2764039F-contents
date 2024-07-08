@@ -1,0 +1,165 @@
+
+library(TCGAbiolinks)
+library(tidyverse)
+
+# getting clinical data for TCGA-LIHC cohort -------------------
+clinical_LIHC <- GDCquery_clinic("TCGA-LIHC")
+
+#stage3_4 <- clinical_LIHC[which(clinical_LIHC$ajcc_pathologic_stage %in% c( 'Stage III','Stage IV') ),2]
+#clinical_LIHC <- clinical_LIHC[-which(clinical_LIHC$submitter_id %in% stage3_4),]
+
+any(colnames(clinical_LIHC) %in% c("vital_status", "days_to_last_follow_up", "days_to_death"))
+which(colnames(clinical_LIHC) %in% c("vital_status", "days_to_last_follow_up", "days_to_death"))
+clinical_LIHC[,c(9,39,45)]
+
+
+# looking at some variables associated with survival
+table(clinical_LIHC$vital_status)
+
+# days_to_death, that is the number of days passed from the initial diagnosis to the patient’s death (clearly, this is only relevant for dead patients)
+# days_to_last_follow_up that is the number of days passed from the initial diagnosis to the last visit.
+
+# change certain values the way they are encoded
+clinical_LIHC$deceased <- ifelse(clinical_LIHC$vital_status == "Alive", FALSE, TRUE)
+
+# create an "overall survival" variable that is equal to days_to_death
+# for dead patients, and to days_to_last_follow_up for patients who
+# are still alive
+clinical_LIHC $overall_survival <- ifelse(clinical_LIHC$vital_status == "Alive",
+                                          clinical_LIHC$days_to_last_follow_up,
+                                          clinical_LIHC$days_to_death)
+
+
+
+
+
+# get gene expression data -----------
+
+# build a query to get gene expression data for entire cohort
+query_LIHC_all = GDCquery(
+  project = "TCGA-LIHC",
+  data.category = "Transcriptome Profiling", # parameter enforced by GDCquery
+  experimental.strategy = "miRNA-Seq",
+  workflow.type = "BCGSC miRNA Profiling",
+  sample.type = "Solid Tissue Normal",
+  access = "open")
+
+output_LIHC <- getResults(query_LIHC_all)
+# get primary tissue sample barcodes
+normal <- output_LIHC$cases
+
+
+###
+
+query_LIHC_normal = GDCquery(
+  project = "TCGA-LIHC",
+  data.category = "Transcriptome Profiling", # parameter enforced by GDCquery
+  experimental.strategy = "miRNA-Seq",
+  data.type = 'miRNA Expression Quantification', 
+  workflow.type = "BCGSC miRNA Profiling",
+  sample.type = "Solid Tissue Normal",
+  access = "open", 
+  barcode = normal)
+
+
+
+
+# download data
+GDCdownload(query_LIHC_normal)
+
+
+
+TCGA_LIHC_data <- GDCprepare(query_LIHC_normal, summarizedExperiment = TRUE)
+
+express_data <- TCGA_LIHC_data[,c(1,grep('read_count',colnames(TCGA_LIHC_data)) ) ]
+
+express_data_normal <- column_to_rownames(express_data,'miRNA_ID')
+
+# ----------------------------- # Tumor # -----------------------------------#
+
+
+
+
+# get gene expression data -----------
+
+# build a query to get gene expression data for entire cohort
+query_LIHC_all = GDCquery(
+  project = "TCGA-LIHC",
+  data.category = "Transcriptome Profiling", # parameter enforced by GDCquery
+  experimental.strategy = "miRNA-Seq",
+  workflow.type = "BCGSC miRNA Profiling",
+  sample.type = "Primary Tumor",
+  access = "open")
+
+output_LIHC <- getResults(query_LIHC_all)
+# get primary tissue sample barcodes
+tumor <- output_LIHC$cases
+
+
+###
+
+query_LIHC_normal = GDCquery(
+  project = "TCGA-LIHC",
+  data.category = "Transcriptome Profiling", # parameter enforced by GDCquery
+  experimental.strategy = "miRNA-Seq",
+  data.type = 'miRNA Expression Quantification', 
+  workflow.type = "BCGSC miRNA Profiling",
+  sample.type = "Primary Tumor",
+  access = "open", 
+  barcode = tumor)
+
+
+
+
+# download data
+GDCdownload(query_LIHC_normal)
+
+
+TCGA_LIHC_data <- GDCprepare(query_LIHC_normal, summarizedExperiment = TRUE)
+
+express_data <- TCGA_LIHC_data[,c(1,grep('read_count',colnames(TCGA_LIHC_data)) ) ]
+
+express_data_tumor <- column_to_rownames(express_data,'miRNA_ID')
+
+setwd('D:/research/HCC')
+
+#write.csv(express_data_normal,'mir_normal.csv')
+#write.csv(express_data_tumor, 'mir_tumor.csv')
+
+setwd('D:/research/HCC')
+
+mir_normal <- read.csv('mir_normal.csv', row.names = 1)
+mir_tumor <- read.csv('mir_tumor.csv', row.names = 1)
+
+colnames(mir_normal) <- gsub('read_count_', '', colnames(mir_normal))
+colnames(mir_tumor) <- gsub('read_count_', '', colnames(mir_tumor))
+
+
+colnames(mir_normal) <- gsub('\\.11A.*', '', colnames(mir_normal))
+colnames(mir_tumor) <-  gsub('\\.01A.*', '', colnames(mir_tumor))
+colnames(mir_tumor) <-  gsub('\\.01B.*', '', colnames(mir_tumor))
+
+length(which(colnames(mir_tumor) %in% colnames(mir_normal)) )
+
+mir_tumor <- mir_tumor[,which(colnames(mir_tumor) %in% colnames(mir_normal))]
+mir_normal <- mir_normal[,which(colnames(mir_normal) %in% colnames(mir_tumor))]
+
+colnames(mir_normal) <- sub('TCGA', 'nomral_TCGA', colnames(mir_normal))
+
+
+
+coldata <- data.frame(condition = c(rep('tumor', ncol(mir_tumor)), rep('normal', ncol(mir_normal)))   )
+rownames(coldata)[1:ncol(mir_tumor)] <- colnames(mir_tumor)
+rownames(coldata)[(ncol(mir_tumor)+1):(nrow(coldata))] <- colnames(mir_normal)
+
+
+
+raw_expression <- cbind(mir_tumor, mir_normal)
+
+
+
+
+
+
+
+

@@ -1,0 +1,44 @@
+#### Example
+
+
+
+
+
+library(rvest)
+library(httr)
+library(xml2)
+library(retry)
+library(tidyverse)
+library(stringr)
+
+
+term <- c('(non small cell lung cancer)')
+
+
+
+ids <- FindGSE(Search_Term = term, Organism = 'Homo sapiens', Study_type = 'Expression profiling by high throughput sequencing', max_result = 2000)
+
+
+perioud <- seq(1, length(ids), 20)
+results_list <- list()
+
+for ( i in 1:length(perioud)){
+
+  id <- perioud[i]:(perioud[i]+19)
+  results <- GEOscrap(GSE = ids[id], attr = 'radiology' )
+  results_list[[i]] <- results
+}
+
+
+
+
+final_result  <- rbind(data.frame(), results_list[[1]])
+for (i in 1:length(results_list)){
+
+  final_result  <- rbind(final_result, results_list[[i]])
+
+}
+
+write.csv(final_result ,'D:/Research/LUAD and radiogenomics/final_result.csv')
+
+
